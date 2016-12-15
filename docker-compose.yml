@@ -1,0 +1,21 @@
+version: "2"
+services:
+    jupyterhub:
+        image: pipalacademy/jupyterhub-simple
+        volumes:
+            - ./tmp:/tmp/tmp
+            - ./home:/home
+            - ./custom:/opt/conda/lib/python3.5/site-packages/notebook/static/custom
+            - ./etc/jupyterhub:/srv/jupyterhub
+        ports:
+          - "8000:8000"
+    nginx:
+        image: nginx
+        volumes:
+            - ./tmp:/tmp/tmp
+            - ./etc/nginx/conf.d:/etc/nginx/conf.d
+            - ./logs:/var/log/nginx
+            - /etc/letsencrypt:/etc/letsencrypt
+        ports:
+          - "80:80"
+          - "443:443"
