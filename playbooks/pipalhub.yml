@@ -34,13 +34,16 @@
           append: yes
 
       - name: Install apt packages for pip
-        apt: 
-          name: python-pip
+        apt: name={{item}}
+        with_items:
+          - python-pip
 
-      - name: Install docker-py python module
-        pip:
-          name: docker-py==1.7.0
- 
+      - name: Install docker-py and docker-compose python packages
+        pip: name={{item}}
+        with_items:
+          - docker-py==1.7.0
+          - docker-compose
+
       - name: pull docker image jupyterhub-simple
         docker_image:
           name: pipalacademy/jupyterhub-simple
