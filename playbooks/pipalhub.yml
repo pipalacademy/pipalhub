@@ -1,0 +1,50 @@
+#
+# Ansible playbook to setup jupyterhub for pipal academy
+#
+---
+- name: Initial server setup
+  hosts: all
+  user: root
+  sudo: true
+  tasks:
+      - name: add user
+        user: name=anand state=present groups=sudo shell=/bin/bash
+
+      - name: add authorized keys
+        authorized_key: user=anand
+                      key="{{lookup('file', '/Users/anand/.ssh/id_rsa.pub') }}"
+
+      - name: add authorized keys
+        authorized_key: user=anand
+                      key="{{lookup('file', '/Users/anand/.ssh/nexi/id_rsa.pub') }}"
+
+      - name: disable root login
+        lineinfile: "dest=/etc/ssh/sshd_config state=present regexp='^PermitRootLogin' line='PermitRootLogin no'"
+
+      - name: disable password authentication
+        lineinfile: "dest=/etc/ssh/sshd_config state=present regexp='^PasswordAuthentication' line='PasswordAuthentication no'"
+
+      - name: enable password less sudo for users in sudo group
+        lineinfile: "dest=/etc/sudoers state=present regexp='^%sudo' line='%sudo ALL=(ALL:ALL) NOPASSWD:ALL'"
+
+      - name: Add the current user to docker group
+        user:
+          name: anand
+          groups: docker
+          append: yes
+
+      - name: Install apt packages for pip
+        apt: 
+          name: python-pip
+
+      - name: Install docker-py python module
+        pip:
+          name: docker-py==1.7.0
+ 
+      - name: pull docker image jupyterhub-simple
+        docker_image:
+          name: pipalacademy/jupyterhub-simple
+
+      - name: pull docker image certbot
+        docker_image:
+          name: anandology/certbot
