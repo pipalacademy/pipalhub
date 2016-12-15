@@ -48,3 +48,8 @@
       - name: pull docker image certbot
         docker_image:
           name: anandology/certbot
+
+      - name: clone pipalhub repo
+        git:
+          repo: https://github.com/pipalacademy/pipalhub.git
+          dest: /opt/pipalhub
