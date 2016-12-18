@@ -7,7 +7,12 @@ import os
 import os.path
 import subprocess
 import re
+import pathlib
+import json
 
+import sys
+sys.path.append(os.path.dirname(__name__))
+from ipytail import IPyTail
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -30,7 +35,9 @@ def export_notebook(src_path, dest_path, force=False):
     notebooks_dir = os.path.join(os.path.dirname(dest_path), "notebooks")
     mkdir_p(notebooks_dir)
 
-    subprocess.call(["ln", "-sf", src_path, notebooks_dir])
+    basename = os.path.basename(dest_path).replace(".html", ".ipynb")
+
+    subprocess.call(["ln", "-sf", src_path, "{}/{}".format(notebooks_dir, basename)])
 
     print("{} -> {}".format(src_path, dest_path))
     cmd = ["jupyter", "nbconvert", "--to", "html", "--stdout", src_path]
@@ -38,6 +45,26 @@ def export_notebook(src_path, dest_path, force=False):
         exit_status = subprocess.call(cmd, stdout=stdout)
 
     return exit_status
+
+def export_summary(path):
+    print("export_summary", path)
+    p = pathlib.Path(path)
+
+    outputfile = p.joinpath("index.ipynb")
+    notebooks = list(p.joinpath("notebooks").glob("*.ipynb"))
+    #max_timestamp = max(f.stat().st_mtime for f in notebooks)
+
+    #print("notebooks", notebooks)
+
+    ipytail = IPyTail()
+    nb = ipytail.ipytail([str(f) for f in notebooks])
+
+    notebook_json = json.dumps(nb, indent=True)
+    p.joinpath("index.ipynb").write_text(notebook_json)
+
+    cmd = ["jupyter", "nbconvert", "--to", "html", str(p.joinpath("index.ipynb"))]
+    subprocess.call(cmd)
+
 
 re_notebook_path = re.compile("/home/([^/]+)/(.*)\.ipynb")
 def find_dest_path(src_path, output_dir):
@@ -52,9 +79,14 @@ def find_dest_path(src_path, output_dir):
 def main():
     args = parse_args()
 
+    dest_dirs = set()
     for f in args.notebooks:
         dest_path = find_dest_path(f, args.output_dir)
         export_notebook(f, dest_path)
+        dest_dirs.add(os.path.dirname(dest_path))
+
+    for d in sorted(dest_dirs):
+        export_summary(d)
 
 def test_find_dest_path():
     assert find_dest_path("/home/a/x.ipynb", "html") == "html/x/a.html"
