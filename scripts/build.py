@@ -50,7 +50,7 @@ def export_summary(path):
     print("export_summary", path)
     p = pathlib.Path(path)
 
-    outputfile = p.joinpath("index.ipynb")
+    outputfile = p.joinpath("00-summary.ipynb")
     notebooks = list(p.joinpath("notebooks").glob("*.ipynb"))
     #max_timestamp = max(f.stat().st_mtime for f in notebooks)
 
@@ -60,9 +60,9 @@ def export_summary(path):
     nb = ipytail.ipytail([str(f) for f in notebooks])
 
     notebook_json = json.dumps(nb, indent=True)
-    p.joinpath("index.ipynb").write_text(notebook_json)
+    p.joinpath("00-summary.ipynb").write_text(notebook_json)
 
-    cmd = ["jupyter", "nbconvert", "--to", "html", str(p.joinpath("index.ipynb"))]
+    cmd = ["jupyter", "nbconvert", "--to", "html", str(p.joinpath("00-summary.ipynb"))]
     subprocess.call(cmd)
 
 
