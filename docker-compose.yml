@@ -19,3 +19,13 @@ services:
         ports:
           - "80:80"
           - "443:443"
+
+    build:
+        image: jupyter/base-notebook
+        volumes:
+            - .:/app
+            - ./home:/home
+            - ./tmp:/tmp/tmp
+        command: /app/scripts/build.sh
+
+
