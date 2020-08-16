@@ -57,7 +57,7 @@ def export_summary(path):
     #print("notebooks", notebooks)
 
     ipytail = IPyTail()
-    nb = ipytail.ipytail([str(f) for f in notebooks])
+    nb = ipytail.ipytail(sorted(str(f) for f in notebooks if f.exists()))
 
     notebook_json = json.dumps(nb, indent=True)
     p.joinpath("00-summary.ipynb").write_text(notebook_json)
