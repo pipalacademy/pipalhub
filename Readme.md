@@ -6,7 +6,7 @@ It contains a JupyterHub server providing one Jupyter instance for each particip
 
 ## Implementation
 
-It is implemented using docker-compose with the following docker containers.
+It is implemented using docker-compose with the following docker containers, and nginx.
 
 * jupyterhub - for running jupyterhub server
 * build - script to [summarize the notebooks][ipytail] and export them as HTML
@@ -38,6 +38,7 @@ Setup nginx:
 ```
 $ cd etc/nginx/conf.d
 $ cp lab.conf.sample lab.conf
+$ sudo ln -s "$(pwd)/lab.conf" /etc/nginx/conf.d/lab.conf
 $ cd -
 ```
 
@@ -47,4 +48,10 @@ Start the lab:
 
 ```
 $ docker-compose up -d
+```
+
+Reload nginx:
+
+```
+$ sudo systemctl reload nginx
 ```
