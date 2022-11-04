@@ -11,7 +11,7 @@ server {
     error_log /var/log/nginx/error.log;
 
     location ~ /build(.*) {
-           alias /tmp/tmp/build/build$1;
+           alias /var/www/pipalhub/tmp/build/build$1;
            autoindex on;
     }
 
