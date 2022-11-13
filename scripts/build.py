@@ -82,7 +82,7 @@ def main():
     dest_dirs = set()
     for f in args.notebooks:
         dest_path = find_dest_path(f, args.output_dir)
-        export_notebook(f, dest_path)
+        # export_notebook(f, dest_path)
         dest_dirs.add(os.path.dirname(dest_path))
 
     for d in sorted(dest_dirs):
