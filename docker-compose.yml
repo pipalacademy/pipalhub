@@ -7,6 +7,7 @@ services:
             - ./home:/home
             - ./custom:/opt/conda/lib/python3.5/site-packages/notebook/static/custom
             - ./etc/jupyterhub:/srv/jupyterhub
+            - ./etc/jupyter:/etc/jupyter
         ports:
           - "8000:8000"
 
@@ -17,5 +18,3 @@ services:
             - ./home:/home
             - ./tmp:/tmp/tmp
         command: /app/scripts/build.sh
-
-
