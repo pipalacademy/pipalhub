@@ -6,8 +6,18 @@
 set -e
 # keep track of the last executed command
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+
+log_if_non_zero() {
+    result=$?
+    if [[ $result -ne 0 ]]; then
+        echo "\"${last_command}\" command failed with exit code $result."
+    else
+        echo 'setup script successful'
+    fi
+}
+
 # echo an error message before exiting
-trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
+trap 'log_if_non_zero' EXIT
 
 # parse args
 if [ $# -lt 1 ]; then
@@ -38,6 +48,7 @@ apt-get update
 apt-get install nginx -y
 install_docker
 
+cd # to $HOME
 ls pipalhub || git clone https://github.com/pipalacademy/pipalhub
 cd pipalhub
 ln -sf $(pwd) /var/www/pipalhub
@@ -51,3 +62,8 @@ certbot --nginx -d $hostname --non-interactive --agree-tos --email anand@pipal.i
 
 docker compose up -d
 systemctl reload nginx
+
+# set perms
+chmod +x "$HOME"
+chmod +x "$(pwd)"
+chmod a+rwx "$(pwd)/tmp"
