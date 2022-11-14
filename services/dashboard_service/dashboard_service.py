@@ -4,7 +4,7 @@ import secrets
 from datetime import date, datetime
 from typing import Optional
 
-from flask import Flask, abort, g, request
+from flask import Flask, abort, request
 from flask.json.provider import DefaultJSONProvider
 from pydantic import BaseModel, Field, ValidationError
 
@@ -58,7 +58,6 @@ class EventStore:
 class CustomJSONProvider(DefaultJSONProvider):
     @staticmethod
     def default(obj):
-        print(f"called with {obj}")
         if isinstance(obj, date):
             return obj.isoformat()
         else:
