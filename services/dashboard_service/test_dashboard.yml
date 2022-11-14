@@ -1,0 +1,151 @@
+---
+method: "GET"
+endpoint: "/events"
+expected_response: []
+---
+method: "POST"
+endpoint: "/events"
+json:
+  type: save-notebook
+  user: alice
+  filename: module1-day1.ipynb
+  path: "/home/alice/module1-day1.ipynb"
+  timestamp: 2022-11-14T16:00:00.511Z
+expected_status: 201 CREATED
+expected_response:
+  id: 1
+  type: save-notebook
+  user: alice
+  filename: module1-day1.ipynb
+  path: "/home/alice/module1-day1.ipynb"
+  timestamp: "2022-11-14T16:00:00.511000+00:00"
+---
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+    timestamp: 2022-11-14T16:00:00.511Z
+  expected_status: 201 CREATED
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: bob
+    filename: module1-day1.ipynb
+    path: /home/bob/module1-day1.ipynb
+    timestamp: "2022-11-15T16:00:00.511Z"
+  expected_status: 201 CREATED
+- method: GET
+  endpoint: /events
+  expected_response:
+    - id: 1
+      type: save-notebook
+      user: alice
+      filename: module1-day1.ipynb
+      path: /home/alice/module1-day1.ipynb
+      timestamp: "2022-11-14T16:00:00.511000+00:00"
+    - id: 2
+      type: save-notebook
+      user: bob
+      filename: module1-day1.ipynb
+      path: /home/bob/module1-day1.ipynb
+      timestamp: "2022-11-15T16:00:00.511000+00:00"
+---
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+    timestamp: 2022-11-14T16:00:00.511Z
+  expected_status: 201 CREATED
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: bob
+    filename: module1-day1.ipynb
+    path: /home/bob/module1-day1.ipynb
+    timestamp: "2022-11-15T16:00:00.511Z"
+  expected_status: 201 CREATED
+- method: GET
+  endpoint: /events
+  expected_response:
+    - id: 1
+      type: save-notebook
+      user: alice
+      filename: module1-day1.ipynb
+      path: /home/alice/module1-day1.ipynb
+      timestamp: "2022-11-14T16:00:00.511000+00:00"
+    - id: 2
+      type: save-notebook
+      user: bob
+      filename: module1-day1.ipynb
+      path: /home/bob/module1-day1.ipynb
+      timestamp: "2022-11-15T16:00:00.511000+00:00"
+---
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+    timestamp: 2022-11-14T16:00:00.511Z
+  expected_status: 201 CREATED
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: bob
+    filename: module1-day1.ipynb
+    path: /home/bob/module1-day1.ipynb
+    timestamp: "2022-11-15T16:00:00.511Z"
+  expected_status: 201 CREATED
+- method: GET
+  endpoint: /events
+  expected_response:
+    - id: 1
+      type: save-notebook
+      user: alice
+      filename: module1-day1.ipynb
+      path: /home/alice/module1-day1.ipynb
+      timestamp: "2022-11-14T16:00:00.511000+00:00"
+    - id: 2
+      type: save-notebook
+      user: bob
+      filename: module1-day1.ipynb
+      path: /home/bob/module1-day1.ipynb
+      timestamp: "2022-11-15T16:00:00.511000+00:00"
+---
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+    timestamp: 2022-11-14T16:00:00.511Z
+  expected_status: 201 CREATED
+- method: POST
+  endpoint: /events
+  json:
+    type: save-notebook
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+    timestamp: "2022-11-15T16:00:00.511Z"
+  expected_status: 201 CREATED
+- method: GET
+  endpoint: /events
+  expected_response:
+  - id: 1
+    type: save-notebook
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+    timestamp: "2022-11-15T16:00:00.511000+00:00"

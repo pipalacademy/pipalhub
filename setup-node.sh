@@ -56,6 +56,9 @@ ln -sf $(pwd) /var/www/pipalhub
 sed "s/server_name _;/server_name $hostname;/" etc/nginx/conf.d/lab.conf.sample > etc/nginx/conf.d/lab.conf
 ln -sf "$(pwd)/etc/nginx/conf.d/lab.conf" /etc/nginx/conf.d/lab.conf
 
+# dependencies that will likely be needed later (e.g. for jupyterhub services)
+apt-get install python3-pip
+
 # use certbot-nginx to setup ssl
 apt-get install certbot python3-certbot-nginx -y
 certbot --nginx -d $hostname --non-interactive --agree-tos --email anand@pipal.in
