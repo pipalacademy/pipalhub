@@ -3,6 +3,7 @@ import json
 import secrets
 from datetime import date, datetime
 from typing import Optional
+from subprocess import check_call
 
 from flask import Flask, abort, request
 from flask.json.provider import DefaultJSONProvider
@@ -86,7 +87,24 @@ def events():
             return abort(400, e.json())
         else:
             event_store.add(event)
+            handle_event(event)
             return event.dict(), 201
     else:
         events = event_store.find(**request.args)
         return [e.dict() for e in events]
+
+
+def handle_event(event):
+    if event.type == "save-notebook":
+        on_save_notebook(event)
+    else:
+        app.logger.warning(f"Unknown event type received: {event.type}")
+
+
+import glob
+buildpy_path = os.path.join(os.path.dirname(__file__), "scripts", "build.py")
+build_dir = "/tmp/tmp/build/build"
+def on_save_notebook(event):
+    filename = event.filename
+    args = glob.glob(f"/home/*/{filename}")
+    check_call(["python3", buildpy_path, "-d", build_dir, *args])

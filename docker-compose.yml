@@ -11,11 +11,3 @@ services:
             - ./services:/services
         ports:
           - "8000:8000"
-
-    build:
-        image: jupyter/base-notebook
-        volumes:
-            - .:/app
-            - ./home:/home
-            - ./tmp:/tmp/tmp
-        command: /app/scripts/build.sh
