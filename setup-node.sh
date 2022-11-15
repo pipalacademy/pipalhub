@@ -58,6 +58,7 @@ ln -sf "$(pwd)/etc/nginx/conf.d/lab.conf" /etc/nginx/conf.d/lab.conf
 
 # dependencies that will likely be needed later (e.g. for jupyterhub services)
 apt-get install python3-pip
+python3 -m pip install --upgrade requests
 
 # use certbot-nginx to setup ssl
 apt-get install certbot python3-certbot-nginx -y

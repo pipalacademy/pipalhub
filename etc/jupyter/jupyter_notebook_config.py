@@ -1,19 +1,20 @@
-_script_exporter = None
 import contextlib
 import io
 import os
 import re
+import requests
 from notebook.utils import to_api_path
 
 EXPORT_DIR = "/tmp/tmp/build/build/"
+SAVE_EVENT_TYPE = "save-notebook"
 
-# debug
-import builtins
-import sys
-def print(*args, **kwargs):
-    builtins.print(*args, **kwargs)
-    builtins.print(*args, **kwargs, file=sys.stderr)
-# debug
+# NOTE: if the jupterhub URL may be different and you don't want to hardcode it
+# the service URL can be obtained by hitting the `/services/{name}` endpoint of
+# the JupyterHub API (`os.environ['API_URL']`)
+EVENTS_ENDPOINT = "http://127.0.0.1:8000/services/dashboard/events"
+
+from nbconvert.exporters.html import HTMLExporter
+_script_exporter = HTMLExporter()
 
 def strip_prefix(word, prefix):
     if word.startswith(prefix):
@@ -54,17 +55,8 @@ def script_post_save(model, os_path, contents_manager, **kwargs):
 
     replaces `jupyter notebook --script`
     """
-    from nbconvert.exporters.html import HTMLExporter
-    print("inside post save") # debug
-
     if model['type'] != 'notebook':
-        print("not notebook") # debug
         return
-
-    global _script_exporter
-
-    if _script_exporter is None:
-        _script_exporter = HTMLExporter(parent=contents_manager)
 
     log = contents_manager.log
 
@@ -81,6 +73,33 @@ def script_post_save(model, os_path, contents_manager, **kwargs):
         create_parent_dirs(symlink_path)
         log.info(f"Symlinking notebook to: {symlink_path}")
         os.symlink(os.path.abspath(os_path), symlink_path)
+
+    #debug
+    for key, val in os.environ.items():
+        if key.startswith("JUPYTERHUB"):
+            log.info(f"{key}: {val}")
+    #debug
+
+    # send save event to dashboard service
+    send_save_event(os_path)
+
+def send_save_event(path):
+    filename = get_filename(path)
+    body = {
+        "user": os.getenv("JUPYTERHUB_USER"),
+        "type": SAVE_EVENT_TYPE,
+        "filename": filename,
+        "path": path,
+    }
+    r = requests.post(EVENTS_ENDPOINT, json=body)
+    r.raise_for_status()
+
+def get_filename(path):
+    parts = path.split("/", maxsplit=4)
+    filename = (os.path.join(*parts[3:])
+                if path.startswith("/home/") and len(parts) > 3
+                else path)
+    return filename
 
 def script_with_umask(*args, **kwargs):
     with set_umask(0):
