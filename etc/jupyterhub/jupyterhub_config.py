@@ -1002,7 +1002,17 @@ c.Spawner.default_url = '/lab'
 #  
 #      c.Spawner.pre_spawn_hook = my_hook
 #  Default: None
-# c.Spawner.pre_spawn_hook = None
+import os
+from subprocess import check_call
+def bootstrap_user_env(spawner):
+    username = spawner.user.name
+    default_docmanager_conf = "/etc/jupyter/lab/docmanager.jupyterlab-settings"
+    user_docmanager_conf = f"/home/{username}/.jupyter/lab/user-settings/@jupyterlab/docmanager-extension/plugin.jupyterlab-settings"
+    if not os.path.exists(user_docmanager_conf):
+        check_call(["mkdir", "-p", os.path.dirname(user_docmanager_conf)])
+        check_call(["cp", default_docmanager_conf, user_docmanager_conf])
+
+c.Spawner.pre_spawn_hook = bootstrap_user_env
 
 ## List of SSL alt names
 #  
