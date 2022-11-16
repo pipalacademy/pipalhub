@@ -1,7 +1,7 @@
 import os
 import json
 import secrets
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional
 from subprocess import check_call
 
@@ -16,7 +16,7 @@ class Event(BaseModel):
     user: str
     filename: str
     path: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class EventStore:
