@@ -18,7 +18,7 @@ def test_create_new_event(client):
     ts_json = "2022-11-14T16:00:00.511Z"
     ts_datetime = datetime.fromisoformat(ts_json.replace("Z", "+00:00"))
     event_data = {
-        "type": "save-notebook",
+        "type": "test-event",
         "user": "alice",
         "filename": "module1-day1.ipynb",
         "path": "/home/alice/module1-day1.ipynb",
