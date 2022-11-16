@@ -149,3 +149,12 @@ expected_response:
     filename: module1-day1.ipynb
     path: /home/alice/module1-day1.ipynb
     timestamp: "2022-11-15T16:00:00.511000+00:00"
+---
+- method: POST
+  endpoint: /events
+  json:
+    type: test-event
+    user: alice
+    filename: module1-day1.ipynb
+    path: /home/alice/module1-day1.ipynb
+  expected_status: 201 CREATED
