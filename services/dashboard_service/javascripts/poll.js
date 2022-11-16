@@ -1,30 +1,35 @@
 // EDIT THIS.
 const jupyterhub_url = "https://beta-test.pipal.in"
 
-
 const dashboard_url = jupyterhub_url + "/services/dashboard"
 const events_endpoint = dashboard_url + "/events"
 
 function waitForUpdate(filters, interval=2000) {
     return new Promise((resolve, reject) => {
-        var lastFetched = null;
-        setInterval(() => {
-            isUpdateAvailable(filters, lastFetched)
-                .then((available, event) => {
-                    if (available && !lastFetched) {
-                        lastFetched = event;
-                    } else if (available) {
-                        // HERE, action to do when update is available
-                        console.log("new event", JSON.stringify(event))
-                        alert("update is available")
-                    }
-                })
-        }, interval)
+        let intervalID;
+        new Promise((resolve, reject) => {
+            var lastFetched = new Date();
+            intervalID = setInterval(() => {
+                isUpdateAvailable(filters, lastFetched)
+                    .then(update => {
+                        let {available, event} = update
+                        if (available) {
+                            resolve(event)
+                        }
+                    })
+            }, interval)
+        }).then(event => {
+            clearInterval(intervalID)
+            resolve(event)
+        }).catch(err => {
+            reject(err)
+        })
     })
 }
 
 async function isUpdateAvailable(filters, lastFetched) {
     let events = await getEvents(filters)
+    console.log("events", JSON.stringify(events, null, 2))
 
     let latestEvent = events.reduce(
         (max, current) => {
@@ -33,33 +38,26 @@ async function isUpdateAvailable(filters, lastFetched) {
             } else {
                 let maxTs = Date.parse(max.timestamp)
                 let currentTs = Date.parse(current.timestamp)
-                return currentTs > maxTs ? currentTs : maxTs
+                return currentTs > maxTs ? current : max
             }
         },
         null
     )
 
-    if (!lastFetched) {
-        return (true, latestEvent)
-    }
-
     if (!latestEvent) {
-        return (false, lastFetched)
+        return {available: false, event: null}
+    } else {
+        let latestTimestamp = Date.parse(latestEvent.timestamp)
+        return latestTimestamp > lastFetched ? {available: true, event: latestEvent} : {available: false, event: null}
     }
-
-    let latestTimestamp = Date.parse(latestEvent.timestamp)
-    let lastFetchedTimestamp = Date.parse(lastFetched.timestamp)
-
-    return latestTimestamp > lastFetchedTimestamp ? (true, latestEvent) : (false, lastFetched)
 }
 
 async function getEvents(filters) {
-    let response = await fetch(events_endpoint)
-    if (!response.ok) {
-        console.error(JSON.stringify(await response.json(), null, 2))
-        throw Error("Server returned non-OK response code", response.status)
-    } else {
+    let url = events_endpoint + "?" + new URLSearchParams(filters)
+    let response = await fetch(url)
+    if (response.ok) {
         return await response.json()
+    } else {
+        throw Error(`Server returned non-OK response code: ${response.status}`)
     }
 }
-
