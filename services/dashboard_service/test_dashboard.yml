@@ -1,160 +1,102 @@
 ---
-method: "GET"
-endpoint: "/events"
-expected_response: []
+name: Get events when response is empty
+steps:
+  - method: "GET"
+    endpoint: "/events"
+    expected_response: []
 ---
-method: "POST"
-endpoint: "/events"
-json:
-  type: test-event
-  user: alice
-  filename: module1-day1.ipynb
-  path: "/home/alice/module1-day1.ipynb"
-  timestamp: 2022-11-14T16:00:00.511Z
-expected_status: 201 CREATED
-expected_response:
-  id: 1
-  type: test-event
-  user: alice
-  filename: module1-day1.ipynb
-  path: "/home/alice/module1-day1.ipynb"
-  timestamp: "2022-11-14T16:00:00.511000+00:00"
+name: Create simple event
+steps:
+  - method: "POST"
+    endpoint: "/events"
+    json:
+      type: test-event
+      user: alice
+      filename: module1-day1.ipynb
+      path: "/home/alice/module1-day1.ipynb"
+      timestamp: 2022-11-14T16:00:00.511Z
+    expected_status: 201 CREATED
+    expected_response:
+      id: 1
+      type: test-event
+      user: alice
+      filename: module1-day1.ipynb
+      path: "/home/alice/module1-day1.ipynb"
+      timestamp: "2022-11-14T16:00:00.511000+00:00"
 ---
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-    timestamp: 2022-11-14T16:00:00.511Z
-  expected_status: 201 CREATED
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: bob
-    filename: module1-day1.ipynb
-    path: /home/bob/module1-day1.ipynb
-    timestamp: "2022-11-15T16:00:00.511Z"
-  expected_status: 201 CREATED
-- method: GET
-  endpoint: /events
-  expected_response:
+name: Create events for multiple users and list them
+steps:
+  - method: POST
+    endpoint: /events
+    json:
+      type: test-event
+      user: alice
+      filename: module1-day1.ipynb
+      path: /home/alice/module1-day1.ipynb
+      timestamp: 2022-11-14T16:00:00.511Z
+    expected_status: 201 CREATED
+  - method: POST
+    endpoint: /events
+    json:
+      type: test-event
+      user: bob
+      filename: module1-day1.ipynb
+      path: /home/bob/module1-day1.ipynb
+      timestamp: "2022-11-15T16:00:00.511Z"
+    expected_status: 201 CREATED
+  - method: GET
+    endpoint: /events
+    expected_response:
+      - id: 1
+        type: test-event
+        user: alice
+        filename: module1-day1.ipynb
+        path: /home/alice/module1-day1.ipynb
+        timestamp: "2022-11-14T16:00:00.511000+00:00"
+      - id: 2
+        type: test-event
+        user: bob
+        filename: module1-day1.ipynb
+        path: /home/bob/module1-day1.ipynb
+        timestamp: "2022-11-15T16:00:00.511000+00:00"
+---
+name: Create multiple events for same user, where event should be overwritten
+steps:
+  - method: POST
+    endpoint: /events
+    json:
+      type: test-event
+      user: alice
+      filename: module1-day1.ipynb
+      path: /home/alice/module1-day1.ipynb
+      timestamp: 2022-11-14T16:00:00.511Z
+    expected_status: 201 CREATED
+  - method: POST
+    endpoint: /events
+    json:
+      type: test-event
+      user: alice
+      filename: module1-day1.ipynb
+      path: /home/alice/module1-day1.ipynb
+      timestamp: "2022-11-15T16:00:00.511Z"
+    expected_status: 201 CREATED
+  - method: GET
+    endpoint: /events
+    expected_response:
     - id: 1
       type: test-event
       user: alice
       filename: module1-day1.ipynb
       path: /home/alice/module1-day1.ipynb
-      timestamp: "2022-11-14T16:00:00.511000+00:00"
-    - id: 2
-      type: test-event
-      user: bob
-      filename: module1-day1.ipynb
-      path: /home/bob/module1-day1.ipynb
       timestamp: "2022-11-15T16:00:00.511000+00:00"
 ---
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-    timestamp: 2022-11-14T16:00:00.511Z
-  expected_status: 201 CREATED
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: bob
-    filename: module1-day1.ipynb
-    path: /home/bob/module1-day1.ipynb
-    timestamp: "2022-11-15T16:00:00.511Z"
-  expected_status: 201 CREATED
-- method: GET
-  endpoint: /events
-  expected_response:
-    - id: 1
+name: Create event for user when timestamp should be defaulted to current time
+steps:
+  - method: POST
+    endpoint: /events
+    json:
       type: test-event
       user: alice
       filename: module1-day1.ipynb
       path: /home/alice/module1-day1.ipynb
-      timestamp: "2022-11-14T16:00:00.511000+00:00"
-    - id: 2
-      type: test-event
-      user: bob
-      filename: module1-day1.ipynb
-      path: /home/bob/module1-day1.ipynb
-      timestamp: "2022-11-15T16:00:00.511000+00:00"
----
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-    timestamp: 2022-11-14T16:00:00.511Z
-  expected_status: 201 CREATED
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: bob
-    filename: module1-day1.ipynb
-    path: /home/bob/module1-day1.ipynb
-    timestamp: "2022-11-15T16:00:00.511Z"
-  expected_status: 201 CREATED
-- method: GET
-  endpoint: /events
-  expected_response:
-    - id: 1
-      type: test-event
-      user: alice
-      filename: module1-day1.ipynb
-      path: /home/alice/module1-day1.ipynb
-      timestamp: "2022-11-14T16:00:00.511000+00:00"
-    - id: 2
-      type: test-event
-      user: bob
-      filename: module1-day1.ipynb
-      path: /home/bob/module1-day1.ipynb
-      timestamp: "2022-11-15T16:00:00.511000+00:00"
----
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-    timestamp: 2022-11-14T16:00:00.511Z
-  expected_status: 201 CREATED
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-    timestamp: "2022-11-15T16:00:00.511Z"
-  expected_status: 201 CREATED
-- method: GET
-  endpoint: /events
-  expected_response:
-  - id: 1
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-    timestamp: "2022-11-15T16:00:00.511000+00:00"
----
-- method: POST
-  endpoint: /events
-  json:
-    type: test-event
-    user: alice
-    filename: module1-day1.ipynb
-    path: /home/alice/module1-day1.ipynb
-  expected_status: 201 CREATED
+    expected_status: 201 CREATED

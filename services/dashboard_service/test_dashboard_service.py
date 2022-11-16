@@ -77,15 +77,15 @@ def test_from_yaml(client):
     with open(YAML_FILENAME) as fd:
         for check_data in yaml.safe_load_all(fd):
             reset()
-            for kwargs in load_check(check_data):
-                check_request(client, **kwargs)
+            check_name, steps = load_check(check_data)
+            for step_kwargs in steps:
+                try:
+                    check_request(client, **step_kwargs)
+                except AssertionError as e:
+                    raise AssertionError(f"Check failed: {check_name}") from e
 
 
 def load_check(check_data):
-    if isinstance(check_data, list):
-        for check in check_data:
-            yield from load_check(check)
-    elif isinstance(check_data, dict):
-        yield check_data
-    else:
-        raise ValueError(f"Can't parse value: {check_data}")
+    check_name = check_data["name"]
+    steps = check_data["steps"]
+    return check_name, steps
