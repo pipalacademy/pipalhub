@@ -12,8 +12,7 @@ It contains a JupyterHub server providing one Jupyter instance for each particip
 There are some easy-install scripts that can be used to setup the node with all dependencies
 that will be needed to run the server.
 
-See the [section on adding users and packages](#adding-users-and-packages) after setup
-for how to add users or pip dependencies.
+After setting up the node, see the section on [adding users and packages](#adding-users-and-packages) for next steps.
 
 ### Easy install
 
@@ -24,18 +23,16 @@ get PipalHub up and running on it.
 
 **Description:**
 
-This script will create a DigitalOcean droplet with the given size and name, assign a DNS entry to it, and run the
-setup-node.sh script on it with the given hostname + configured base domain.
+This script will create a DigitalOcean droplet with the given size and name, assign a DNS entry to it, and set it up with the `setup-node.sh` script.
 
-Some of its default configuration can be found in the script after imports.
-[These](https://github.com/pipalacademy/pipalhub/blob/b10a5fa8817c4f3e594a0bd4f5044c157f5092da/create-node.py#L14-L21)
-can be changed if needed.
+Some defaults are hardcoded as constants at the [beginning of this file](https://github.com/pipalacademy/pipalhub/blob/b10a5fa8817c4f3e594a0bd4f5044c157f5092da/create-node.py#L14-L21).
+These can be changed as needed.
 
 **Prerequisites:**
 
 * `DIGITALOCEAN_TOKEN` to create a node and set DNS entry on it.
 * One of your SSH keys should be saved on DigitalOcean. This is to run the setup script on a new node over SSH.
-* DNS for `pipal.in` (configurable) domain must be served from DigitalOcean.
+* DNS for the base domain (default: `"pipal.in"`) should be set in digitalocean.
 
 **Usage:**
 
@@ -94,17 +91,14 @@ $ setup-node.sh hostname.pipal.in
 To add users to JupyterHub server,
 
 1. SSH into the machine
-2. Open `$HOME/pipalhub/etc/jupyterhub/users.txt` in an editor (create one if it doesn't exist)
-3. Add users one on each line, in the format `username:password`. See [`$HOME/pipalhub/etc/jupyterhub/users.txt.sample`](https://github.com/pipalacademy/pipalhub/blob/b10a5fa8817c4f3e594a0bd4f5044c157f5092da/etc/jupyterhub/users.txt.sample)
-for an example of how this file should look.
-4. Go to PipalHub directory (`$HOME/pipalhub/etc/jupyterhub/users.txt`).
+2. Append usernames in the format `username:password` to `~/pipalhub/etc/jupyterhub/users.txt`. There should be one user on each line. Refer to this [sample file](https://github.com/pipalacademy/pipalhub/blob/b10a5fa8817c4f3e594a0bd4f5044c157f5092da/etc/jupyterhub/users.txt.sample) for an example.
+3. Restart the containers with `docker compose restart` (from the `~/pipalhub` directory)
 
 ```shell
 dev@home:~$ ssh root@hostname.pipal.in  # 1. ssh into the host machine
 $ cd pipalhub
-$ vi etc/jupyterhub/users.txt # 2. open in editor
-$ # 3. add users
-$ docker compose restart # 4. for changes to take effect
+$ echo 'bob:bobs_password' >> etc/jupyterhub/users.txt
+$ docker compose restart
 ```
 
 ### Implementation
@@ -194,7 +188,7 @@ These are example requests/responses:
 
 ###### Create event:
 
-```json
+```
 POST /events
 {
     "type": "test-event",
@@ -220,7 +214,7 @@ default to using the current timestamp.
 
 ###### List events:
 
-```json
+```
 GET /events
 --- response:
 200 OK
@@ -246,7 +240,7 @@ GET /events
 
 Listing can also have filters. Filtering can be done on any field in the returned JSON. Example:
 
-```json
+```
 GET /events?user=alice
 --- response:
 [
