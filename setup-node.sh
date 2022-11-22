@@ -29,43 +29,53 @@ hostname="$1"
 
 # helpers
 function install_docker() {
-    apt-get install -y \
+    sudo apt-get install -y \
         ca-certificates \
         curl \
         gnupg \
         lsb-release
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
+    sudo mkdir -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    apt-get update
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+}
+
+function post_install_docker() {
+    # check if user is in docker group, otherwise add user to docker group
+    groups | grep "\bdocker\b"; status=$?
+    if [[ $? -ne 0 ]]; then
+        sudo usermod -aG docker $USER
+        newgrp docker
+    fi
 }
 
 # actual script
-apt-get update
-apt-get install nginx -y
+sudo apt-get update
+sudo apt-get install nginx -y
 install_docker
+post_install_docker
 
 cd # to $HOME
 ls pipalhub || git clone https://github.com/pipalacademy/pipalhub
 cd pipalhub
-ln -sf $(pwd) /var/www/pipalhub
+sudo ln -sf $(pwd) /var/www/pipalhub
 
 sed "s/server_name _;/server_name $hostname;/" etc/nginx/conf.d/lab.conf.sample > etc/nginx/conf.d/lab.conf
-ln -sf "$(pwd)/etc/nginx/conf.d/lab.conf" /etc/nginx/conf.d/lab.conf
+sudo ln -sf "$(pwd)/etc/nginx/conf.d/lab.conf" /etc/nginx/conf.d/lab.conf
 
 # dependencies that will likely be needed later (e.g. for jupyterhub services)
-apt-get install python3-pip
+sudo apt-get install -y python3-pip
 python3 -m pip install --upgrade requests
 
 # use certbot-nginx to setup ssl
-apt-get install certbot python3-certbot-nginx -y
-certbot --nginx -d $hostname --non-interactive --agree-tos --email anand@pipal.in
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d $hostname --non-interactive --agree-tos --email anand@pipal.in
 
 docker compose up -d
-systemctl reload nginx
+sudo systemctl reload nginx
 
 # set perms
 chmod +x "$HOME"
