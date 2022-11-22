@@ -1,7 +1,7 @@
 version: "2"
 services:
     jupyterhub:
-        image: pipalacademy/jupyterhub-simple
+        image: pipalacademy/jupyterhub-simple:3.10
         volumes:
             - ./tmp:/tmp/tmp
             - ./home:/home
