@@ -1011,6 +1011,7 @@ def bootstrap_user_env(spawner):
     if not os.path.exists(user_docmanager_conf):
         check_call(["mkdir", "-p", os.path.dirname(user_docmanager_conf)])
         check_call(["cp", default_docmanager_conf, user_docmanager_conf])
+        check_call(["chown", "-R", f"{username}:{username}", f"/home/{username}/.jupyter"])
 
 c.Spawner.pre_spawn_hook = bootstrap_user_env
 
