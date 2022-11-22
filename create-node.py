@@ -101,6 +101,7 @@ def run_script(ip_address, local_path, user="root", args=""):
     # scp $local_path to the node and run it
     system(f"scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p '{local_path}' {user}@{ip_address}:/tmp/script.sh")
     system(f"ssh -o StrictHostKeyChecking=no {user}@{ip_address} /tmp/script.sh {args}")
+    system(f"ssh -o StrictHostKeyChecking=no {user}@{ip_address} rm /tmp/script.sh")
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -121,8 +122,11 @@ def main():
     log_dns_record_set(record)
     wait_for_ssh(droplet, timeout=60)
     run_script(
+        droplet.ip_address, local_path="create-non-root-user.sh",
+        user="root", args="pipal")
+    run_script(
         droplet.ip_address, local_path="setup-node.sh",
-        user="root", args=f"{hostname}.{BASE_DOMAIN}")
+        user="pipal", args=f"{hostname}.{BASE_DOMAIN}")
 
 
 if __name__ == "__main__":
