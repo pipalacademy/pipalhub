@@ -125,6 +125,9 @@ def main():
         droplet.ip_address, local_path="create-non-root-user.sh",
         user="root", args="pipal")
     run_script(
+        droplet.ip_address, local_path="install-docker.sh",
+        user="pipal")
+    run_script(
         droplet.ip_address, local_path="setup-node.sh",
         user="pipal", args=f"{hostname}.{BASE_DOMAIN}")
 
