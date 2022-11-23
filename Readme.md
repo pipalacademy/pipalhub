@@ -101,6 +101,8 @@ $ echo 'bob:bobs_password' >> etc/jupyterhub/users.txt
 $ docker compose restart
 ```
 
+Adding packages is similar, except this time you need to edit a `etc/jupyterhub/requirements.txt` file and repeat the same steps.
+
 ### Implementation
 
 #### Directory structure
