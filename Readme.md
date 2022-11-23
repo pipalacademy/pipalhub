@@ -48,11 +48,34 @@ defined in create-node.py.
 * `--hostname` is the subdomain that this domain will be assigned. For example, if `BASE_DOMAIN` is configured to be `pipal.in` in create-node.py, the node will
 become accessible at `{hostname}.pipal.in`
 
+### Manual installation on a node
+
+If you have a node ready, you can use `install-docker.sh` and `setup-node.sh` to complete the manual installation.
+
+Please note that `create-node.py` executes exactly this over SSH, so you don't have to do it separately.
+
+#### `install-docker.sh` script
+
+This script should be run as the user that will run docker for deployment. Besides installing docker on the system, this script will also
+run the [post install steps](https://docs.docker.com/engine/install/linux-postinstall/) as the current user.
+
+If you don't have a non-root user, you can create one with `create-non-root-user.sh`.
+
+```shell
+# in case you need to create a new non root user
+$ ./create-non-root-user.sh pipal
+$ su pipal
+
+# install docker and refresh group assignments
+$ ./install-docker
+Enter password: 
+
+...
+$ newgrp docker
+$ ... setup node script
+```
+
 #### `setup-node.sh` script
-
-Once you have a node ready, this script can be used to install all the dependencies, setup SSL, and start serving JupyterHub.
-
-Please note that `create-node.py` executes this script, so you don't have to do it separately.
 
 **Description:**
 
