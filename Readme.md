@@ -79,9 +79,9 @@ $ ... setup node script
 
 **Description:**
 
-`setup-node.sh` is a script to be run on the node that needs to be setup with all that is needed for the JupyterHub setup to work.
-It assumes a fresh Ubuntu install, but it will work idempotently too. If some step fails due to some reason,
-you can fix the cause and run this script again.
+`setup-node.sh` can be run as a sudoer, this will setup everything to start running JupyterHub.
+It assumes a fresh Ubuntu install, but it will work idempotently too. If a step fails due to some
+external reason, you can run this script again after fixing it.
 
 **Implementation details:**
 
