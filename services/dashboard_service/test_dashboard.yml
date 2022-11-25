@@ -100,3 +100,131 @@ steps:
       filename: module1-day1.ipynb
       path: /home/alice/module1-day1.ipynb
     expected_status: 201 CREATED
+---
+name: Create user OK
+patches:
+  "dashboard_service.auth":
+    user_for_token.return_value: '{"name": "tokenuser"}'
+  "dashboard_service.does_user_exist":
+    side_effect: "[False, True]"
+  "dashboard_service.open":
+    return_value: "StringIO()"
+  "dashboard_service.check_call":
+    return_value: "0"
+steps:
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    json:
+      username: testuser
+      password: testpass
+    expected_status: 201 CREATED
+---
+name: Create user when authorization fails
+patches:
+  "dashboard_service.auth":
+    user_for_token.return_value: 'None'
+  "dashboard_service.does_user_exist":
+    side_effect: "[False, True]"
+  "dashboard_service.open":
+    return_value: "StringIO()"
+  "dashboard_service.check_call":
+    return_value: "0"
+steps:
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    json:
+      username: testuser
+      password: testpass
+    expected_status: 401 UNAUTHORIZED
+---
+name: Create user when content is not JSON
+patches:
+  "dashboard_service.auth":
+    user_for_token.return_value: '{"name": "tokenuser"}'
+  "dashboard_service.does_user_exist":
+    side_effect: "[False, True]"
+  "dashboard_service.open":
+    return_value: "StringIO()"
+  "dashboard_service.check_call":
+    return_value: "0"
+steps:
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    query_string:
+      username: testuser
+      password: testpass
+    expected_status: 400 BAD REQUEST
+---
+name: Create user when username is invalid
+patches:
+  "dashboard_service.auth":
+    user_for_token.return_value: '{"name": "tokenuser"}'
+  "dashboard_service.does_user_exist":
+    side_effect: "[False, True]"
+  "dashboard_service.open":
+    return_value: "StringIO()"
+  "dashboard_service.check_call":
+    return_value: "0"
+steps:
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    json:
+      username: 'testuser$'
+      password: testpass
+    expected_status: 400 BAD REQUEST
+---
+name: Create user when password is invalid
+patches:
+  "dashboard_service.auth":
+    user_for_token.return_value: '{"name": "tokenuser"}'
+  "dashboard_service.does_user_exist":
+    side_effect: "[False, True]"
+  "dashboard_service.open":
+    return_value: "StringIO()"
+  "dashboard_service.check_call":
+    return_value: "0"
+steps:
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    json:
+      username: testuser
+      password: 'testpass$'
+    expected_status: 400 BAD REQUEST
+---
+name: Create user when user already exists
+patches:
+  "dashboard_service.auth":
+    user_for_token.return_value: '{"name": "tokenuser"}'
+  "dashboard_service.does_user_exist":
+    side_effect: "[False, True]"
+  "dashboard_service.open":
+    return_value: "StringIO()"
+  "dashboard_service.check_call":
+    return_value: "0"
+steps:
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    json:
+      username: testuser
+      password: testpass
+    expected_status: 201 CREATED
+  - method: POST
+    endpoint: /users
+    headers:
+      Authorization: "token testtoken"
+    json:
+      username: testuser
+      password: testpass
+    expected_status: 400 BAD REQUEST
