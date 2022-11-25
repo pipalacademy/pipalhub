@@ -1,13 +1,18 @@
 import os
 import json
 import secrets
+import string
+import pwd
 from datetime import date, datetime, timezone
-from typing import Optional
+from functools import wraps
 from subprocess import check_call
+from typing import Optional
 
 from flask import Flask, abort, request
 from flask.json.provider import DefaultJSONProvider
 from pydantic import BaseModel, Field, ValidationError
+
+from jupyterhub.services.auth import HubAuth
 
 
 class Event(BaseModel):
@@ -71,6 +76,38 @@ app = Flask(__name__)
 app.secret_key = secrets.token_bytes(32)
 app.json = CustomJSONProvider(app)
 
+auth = HubAuth(cache_max_age=60)
+
+def authenticated(f):
+    """Decorator for authenticating with Hub"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = get_auth_token(request.headers.get("authorization", ""))
+        if token:
+            user = auth.user_for_token(token)
+        else:
+            user = None
+
+        if user:
+            # this authorizes any user of the JupyterHub system, not just admins
+            # TODO: take a call on whether to continue this or to add more elaborate
+            # authentication (such as only allowing certain usernames or only admins)
+            app.logger.info(f"[{request.path}] Authorizing user {user['name']}")
+            return f(*args, **kwargs)
+        else:
+            app.logger.info(f"[{request.path}] Authorization denied due to invalid token")
+            abort(401)
+
+    return decorated
+
+
+def get_auth_token(header):
+    parts = header.split(maxsplit=1)
+    if len(parts) == 2 and parts[0].lower() == "token":
+        return parts[1]
+    else:
+        return None
+
 event_store = EventStore()
 
 
@@ -99,6 +136,53 @@ def handle_event(event):
         on_save_notebook(event)
     else:
         app.logger.warning(f"Unknown event type received: {event.type}")
+
+
+@app.route(prefix + "users", methods=["POST"])
+@authenticated
+def users():
+    data = request.json
+    if not isinstance(data, dict):
+        return {"message": "JSON data must be an object"}, 400
+
+    username, password = data["username"], data["password"]
+    if not validate_username(username):
+        return {"message": "Username is invalid"}, 400
+    elif not validate_password(password):
+        return {"message": "Password is invalid"}, 400
+    elif does_user_exist(username):
+        return {"message": "User already exists"}, 400
+
+    create_user(username=username, password=password)
+    return {"username": username}, 201
+
+
+def create_user(username, password):
+    usersfile = "/srv/jupyterhub/users.txt"
+    add_users_py = "/opt/jhub/add-users.py"
+
+    with open(usersfile, "a") as f:
+        f.write(f"{username}:{password}\n")
+    check_call(["python3", add_users_py, usersfile])
+
+
+def does_user_exist(username):
+    try:
+        pwd.getpwnam(username)
+    except KeyError:
+        return False
+    else:
+        return True
+
+
+def validate_username(val):
+    allowed_chars = string.ascii_letters + string.digits
+    return all(char in allowed_chars for char in val)
+
+
+def validate_password(val):
+    allowed_chars = string.ascii_letters + string.digits
+    return all(char in allowed_chars for char in val)
 
 
 import glob

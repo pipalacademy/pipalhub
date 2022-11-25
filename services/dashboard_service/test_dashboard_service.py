@@ -1,6 +1,10 @@
+import contextlib
 import pytest
 import yaml
-from datetime import datetime
+from dataclasses import dataclass
+from io import StringIO
+from unittest.mock import Mock, MagicMock, patch
+from typing import Any
 
 import dashboard_service
 from dashboard_service import app
@@ -8,84 +12,91 @@ from dashboard_service import app
 
 YAML_FILENAME = "test_dashboard.yml"
 
-
 @pytest.fixture()
 def client():
     return app.test_client()
 
-
-def test_create_new_event(client):
-    ts_json = "2022-11-14T16:00:00.511Z"
-    ts_datetime = datetime.fromisoformat(ts_json.replace("Z", "+00:00"))
-    event_data = {
-        "type": "test-event",
-        "user": "alice",
-        "filename": "module1-day1.ipynb",
-        "path": "/home/alice/module1-day1.ipynb",
-        "timestamp": ts_json,
-    }
-
-    response = client.post(
-        "/events",
-        json=event_data,
-    )
-    assert response.status_code == 201
-    response_data = response.json
-    id = response_data.pop("id")
-    assert id is not None
-    assert response_data == {
-        **event_data,
-        "timestamp": ts_datetime.isoformat()
-    }
-
-    response = client.get("/events", query_string={"user": "alice"})
-    assert response.status_code == 200
-    expected = [
-        {
-            "id": id,
-            **event_data,
-            "timestamp": ts_datetime.isoformat(),
-        }
-    ]
-    assert response.json == expected
-
-
-def check_request(client, method, endpoint,
-                  query_string=None, json=None,
-                  expected_status="200 OK", expected_response=None):
-    options = dict(method=method)
-    if query_string:
-        options.update(query_string=query_string)
-    if json:
-        options.update(json=json)
-
-    response = client.open(endpoint, **options)
-
-    assert response.status == expected_status
-
-    if isinstance(expected_response, dict) or isinstance(expected_response, list):
-        assert response.json == expected_response
-    elif expected_response is not None:
-        assert response.get_data(as_text=True) == expected_response
-
-
 def reset():
     dashboard_service.event_store = dashboard_service.EventStore()
 
-
 def test_from_yaml(client):
     with open(YAML_FILENAME) as fd:
-        for check_data in yaml.safe_load_all(fd):
-            reset()
-            check_name, steps = load_check(check_data)
-            for step_kwargs in steps:
+        for check in map(Check.from_dict, yaml.safe_load_all(fd)):
+            try:
+                check.run(client)
+            finally:
+                reset()
+
+@dataclass
+class Request:
+    method: str
+    endpoint: str
+    query_string: dict[str, str] | None = None
+    json: dict[str, Any] | None = None
+    headers: dict[str, str] | None = None
+
+    expected_status: str  = "200 OK"
+    expected_response: dict | list | str | None = None
+
+    def _get_client_kwargs(self):
+        options = dict(method=self.method)
+        if self.query_string:
+            options.update(query_string=self.query_string)
+        if self.json:
+            options.update(json=self.json)
+        if self.headers:
+            options.update(headers=self.headers)
+        return options
+
+    def run(self, client):
+        options = self._get_client_kwargs()
+        response = client.open(self.endpoint, **options)
+
+        assert response.status == self.expected_status
+
+        if isinstance(self.expected_response, dict) or isinstance(self.expected_response, list):
+            assert response.json == self.expected_response
+        elif self.expected_response is not None:
+            assert response.get_data(as_text=True) == self.expected_response
+
+    @classmethod
+    def from_dict(cls, request_data):
+        return cls(**request_data)
+
+@dataclass
+class Check:
+    name: str
+    steps: list[Request]
+    patches: list
+
+    def run(self, client):
+        with apply_patches(self.patches):
+            for step in self.steps:
                 try:
-                    check_request(client, **step_kwargs)
+                    step.run(client)
                 except AssertionError as e:
-                    raise AssertionError(f"Check failed: {check_name}") from e
+                    raise AssertionError(f"Check failed: {step.name}") from e
 
+    @staticmethod
+    def _get_patcher(item, kwargs):
+        return patch(item, **{k: eval(v) for k, v in kwargs.items()})
 
-def load_check(check_data):
-    check_name = check_data["name"]
-    steps = check_data["steps"]
-    return check_name, steps
+    @classmethod
+    def from_dict(cls, check_data):
+        check_name = check_data["name"]
+        steps = list(map(Request.from_dict, check_data["steps"]))
+
+        _patches = check_data.get("patches", {})
+        patches = [cls._get_patcher(item, kwargs)
+                   for item, kwargs in _patches.items()]
+
+        return Check(name=check_name, steps=steps, patches=patches)
+
+@contextlib.contextmanager
+def apply_patches(patches):
+    for patcher in patches: patcher.start()
+    try:
+        yield
+    finally:
+        for patcher in patches:
+            patcher.stop()
