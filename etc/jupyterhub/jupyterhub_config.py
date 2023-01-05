@@ -562,17 +562,17 @@
 #          }
 #      ]
 #  Default: []
-c.JupyterHub.services = [
-    {
-        "name": "dashboard",
-        "command": "/services/dashboard_service/launch.sh",
-        "environment": {
-            "FLASK_APP": "/services/dashboard_service/dashboard_service.py",
-            "FLASK_RUN_PORT": "10101",
-        },
-        "url": "http://127.0.0.1:10101",
-    }
-]
+# c.JupyterHub.services = [
+#     {
+#         "name": "dashboard",
+#         "command": "/services/dashboard_service/launch.sh",
+#         "environment": {
+#             "FLASK_APP": "/services/dashboard_service/dashboard_service.py",
+#             "FLASK_RUN_PORT": "10101",
+#         },
+#         "url": "http://127.0.0.1:10101",
+#     }
+# ]
 
 ## Instead of starting the Application, dump configuration to stdout
 #  See also: Application.show_config
