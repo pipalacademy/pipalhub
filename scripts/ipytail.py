@@ -3,11 +3,12 @@
 import sys
 import json
 import argparse
+from pathlib import Path
 
 def markdown_cell(text):
     return {
         'cell_type': 'markdown',
-        'source': text, 
+        'source': text,
         'metadata': {}
     }
 
@@ -26,9 +27,10 @@ class IPyTail:
 
         nb = dict(notebooks[0])
 
-        def format_nb():		
+        def format_nb():
             for title, n in zip(filenames, notebooks):
-                yield markdown_cell("## ==> {} <==\n".format(title))
+                title = Path(title).stem
+                yield markdown_cell(f'<h2 style="background: #444; color: #ddd; padding: 20px; font-weight: bold; border-radius: 10px; text-transform: uppercase;" id="{title}">{title}</h2>')
                 yield from n['cells']
 
         nb['cells'] = list(format_nb())
@@ -38,7 +40,7 @@ class IPyTail:
         nb = self.read_notebook(filename)
         nb = self.tail(nb, self.max_cells)
         nb = self.trim_notebook_outputs(nb, self.max_lines)
-        return nb		
+        return nb
 
     def read_notebook(self, filename):
         return json.load(open(filename))
@@ -55,7 +57,7 @@ class IPyTail:
         """Limit the number of lines in each output of the cell to max_lines.
 
         A cell can contain multiple outputs, one for stdout, another for stderr
-        and some other. This limits each output to max_lines. 
+        and some other. This limits each output to max_lines.
         """
         if 'outputs' not in cell:
             return cell
@@ -63,9 +65,9 @@ class IPyTail:
         return dict(cell, outputs=outputs)
 
     def _trim_output(self, output, max_lines):
-        if 'text' in output and len(output['text']) > max_lines:		
+        if 'text' in output and len(output['text']) > max_lines:
             n = (max_lines+1) // 2
-            head = output['text'][:n] 
+            head = output['text'][:n]
             tail = output['text'][-n:]
             text = head + ['...\n'] + tail
             return dict(output, text=text)
@@ -90,11 +92,11 @@ def ipytail(filename, n=10, max_lines=0):
 def parse_arguments():
     p = argparse.ArgumentParser()
     p.add_argument("-n", "--num-cells",
-                   type=int, 
+                   type=int,
                    default=10,
                    help="Number of cells to include")
 
-    p.add_argument("-l", 
+    p.add_argument("-l",
                    dest="max_lines",
                    type=int,
                    default=25,
