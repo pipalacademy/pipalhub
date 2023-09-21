@@ -6,18 +6,14 @@
 
     <div class="sidebar">
         {% for nb in notebooks %}
-            <div class="notebook-link"><a href="/nb/{{nb.stem}}">{{nb.stem}}</a></div>
+            <div class="notebook-link"><a href="/nb/{{nb}}">{{nb}}</a></div>
         {% endfor %}
-    </div>
-    <div id="controls">
-        <div id="header">Jupyter Notebook Previewer</div>
-
     </div>
     <div class="notebooks">
         {% for nb in notebooks %}
             <div class="notebook-wrapper">
-                <h2 class="notebook-title">{{nb.stem}}</h2>
-                <div class="notebook" id="notebook-{{nb.stem}}"></div>
+                <h2 class="notebook-title">{{nb}}</h2>
+                <div class="notebook" id="notebook-{{nb}}"></div>
             </div>
         {% endfor %}
     </div>
@@ -25,7 +21,7 @@
 
 <script type="text/javascript">
     {% for nb in notebooks %}
-        renderNotebook("#notebook-{{nb.stem}}", "/nbtail/{{nb.stem}}.ipynb");
+        renderNotebook("#notebook-{{nb}}", "/nbtail/{{nb}}.ipynb");
     {% endfor %}
 </script>
 
