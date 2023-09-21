@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="main">
+    <h1>Dashboard</h1>
+
+    <div class="sidebar">
+        {% for nb in notebooks %}
+            <div class="notebook-link"><a href="/nb/{{nb.stem}}">{{nb.stem}}</a></div>
+        {% endfor %}
+    </div>
+    <div id="controls">
+        <div id="header">Jupyter Notebook Previewer</div>
+
+    </div>
+    <div class="notebooks">
+        {% for nb in notebooks %}
+            <div class="notebook-wrapper">
+                <h2 class="notebook-title">{{nb.stem}}</h2>
+                <div class="notebook" id="notebook-{{nb.stem}}"></div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script type="text/javascript">
+    {% for nb in notebooks %}
+        renderNotebook("#notebook-{{nb.stem}}", "/nbtail/{{nb.stem}}.ipynb");
+    {% endfor %}
+</script>
+
+{% endblock %}

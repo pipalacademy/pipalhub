@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>nbpreview — Jupyter Notebook Previewer</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1">
+        <script src="/static/js/vendor/es5-shim.min.js"></script>
+        <script src="/static/js/vendor/marked.min.js"></script>
+        <script src="/static/js/vendor/purify.min.js"></script>
+        <script src="/static/js/vendor/ansi_up.min.js"></script>
+        <script src="/static/js/vendor/prism.min.js"></script>
+        <script src="/static/js/vendor/katex.min.js"></script>
+        <script src="/static/js/vendor/katex-auto-render.min.js"></script>
+        <script src="/static/js/vendor/notebook.min.js"></script>
+        <script src="/static/js/app.js"></script>
+
+        <link rel="stylesheet" href="/static/css/vendor/katex.min.css" />
+        <link rel="stylesheet" href="/static/css/vendor/prism.css" />
+        <link rel="stylesheet" href="/static/css/vendor/notebook.css" />
+        <link rel="stylesheet" href="/static/css/preview.css" />
+    </head>
+    <body>
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>
