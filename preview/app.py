@@ -18,7 +18,7 @@ def get_name(path):
 @app.route("/")
 def index():
     paths = glob.glob(notebook_pattern)
-    names = [get_name(path) for path in paths]
+    names = sorted(get_name(path) for path in paths)
     return render_template("index.html", notebooks=names)
 
 @app.route("/nb/<name>.ipynb")
